@@ -1,0 +1,59 @@
+# coding: utf-8
+import os
+import requests
+import time
+import xlwt
+from bs4 import BeautifulSoup
+
+g_index = 1
+#用request伪装成浏览器欺骗并访问服务器
+#新房数据爬取函数
+def grab_newhouse_information():
+    path = input("请输入文件储存路径。\n")
+    pages = int(input("请输入广州新房的数据共有多少页？\n"))
+    #逐页抓取循环
+    workbook = xlwt.Workbook()
+    sheet = workbook.add_sheet('房价', cell_overwrite_ok=True)  # 将sheet表取名为房价
+    for page in range(1, pages + 1):
+
+        #伪装的请求头
+        requests_head = {
+                            'authority': 'gz.newhouse.fang.com', 'method': 'GET', 'path': '/house/s/b9' + str(page) + '\
+                            ?ctm = 1.gz.xf_search.page.' + str(page), 'scheme': 'https', 'accept': 'text/html,applicati\
+                            on/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-excha\
+                            nge;v=b3', 'accept-encoding': 'gzip, deflate, br', 'accept-language': 'zh-CN,zh;q=0.9', 'ca\
+                            che-control': 'max-age=0', 'referer': 'https://gz.newhouse.fang.com/house/s/b\
+                            9' + str(page) + '?ctm = 1.gz.xf_search.page.' + str(page), 'upgrade-insecure-reque\
+                            sts': '1', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHT\
+                            ML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'
+        }
+
+        url = "https://gz.newhouse.fang.com/house/s/b9" + str(page) + "?ctm = 1.gz.xf_search.page." + str(page)
+        getter = requests.get(url, headers=requests_head)
+        getter.encoding = "GBK"
+        soup = BeautifulSoup(getter.text, "lxml")
+        #attrs = {"class": 'relative_message clearfix'}
+        name = soup.find_all('div', 'house_value clearfix')
+        locate = soup.find_all('div', 'relative_message clearfix')
+        price = soup.find_all('div', 'nhouse_price')
+        sheet.write(0, 0, "楼盘名")
+        sheet.write(0, 1, "地址")
+        sheet.write(0, 2, "每平方房价")
+        for index in range(0, int(len(price))):
+            global g_index
+            sheet.write(g_index, 0, name[index].text)
+            sheet.write(g_index, 1, locate[index].text)
+            sheet.write(g_index, 2, price[index].text)
+            g_index += 1
+    workbook.save(path + '广州房天下新房数据.xls')  # 保存
+    print("数据已经存放为" + str(path) + "广州房天下新房数据.xls\n")
+
+
+
+
+
+
+
+#main函数
+if __name__ == '__main__':
+    grab_newhouse_information()
