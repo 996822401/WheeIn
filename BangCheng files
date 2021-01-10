@@ -1,0 +1,390 @@
+import os
+import time
+import xlwt
+from selenium import webdriver
+#如果频繁报错，不存在单元格的话，可以将时停调成3秒，或更大
+
+
+def new_house_data_capture():
+    global index
+    global safe_sleep_time
+    index = 1
+    safe_sleep_time = 1
+    path = input("请输入数据表存放的路径\n")
+    pages = int(input("请先查看广州共有几页数据，并在此输入\n"))
+    stop = int(input("请输入时停\n"))
+    xls = xlwt.Workbook()
+    sheet1 = xls.add_sheet("广州新房数据", cell_overwrite_ok=True)
+    sheet1.write(0, 0, "楼盘名")
+    sheet1.write(0, 1, "价格")
+    sheet1.write(0, 2, "物业类别")
+    sheet1.write(0, 3, "建筑类别")
+    sheet1.write(0, 4, "产权年限")
+    sheet1.write(0, 5, "开发商")
+    sheet1.write(0, 6, "楼盘地址")
+    sheet1.write(0, 7, "项目特色")
+    sheet1.write(0, 8, "装修状况")
+    sheet1.write(0, 9, "环线资料")
+    sheet1.write(0, 10, "销售状态")
+    sheet1.write(0, 11, "开盘时间")
+    sheet1.write(0, 12, "售楼地址")
+    sheet1.write(0, 13, "主力户型")
+    sheet1.write(0, 14, "交房时间")
+    sheet1.write(0, 15, "咨询电话")
+    sheet1.write(0, 16, "占地面积")
+    sheet1.write(0, 17, "容积率")
+    sheet1.write(0, 18, "停车位")
+    sheet1.write(0, 19, "总户数")
+    sheet1.write(0, 20, "物业费")
+    sheet1.write(0, 21, "楼层状况")
+    sheet1.write(0, 22, "建筑面积")
+    sheet1.write(0, 23, "绿化率")
+    sheet1.write(0, 24, "楼栋总数")
+    sheet1.write(0, 25, "物业公司")
+    sheet1.write(0, 26, "周边设施")
+    #访问第一层网页，循环控制页数
+    try:
+        for page in range(1, pages + 1):
+            if (safe_sleep_time % 5) == 0:
+                print("5的倍数层，即将休眠90秒")
+                print("开始休眠")
+                time.sleep(90)
+            url = "https://gz.newhouse.fang.com/house/s/b9" + str(page) + "/"
+            print("正在爬取第" + str(page) + "页的数据")
+            #隐式调用火狐浏览器
+            #option = webdriver.FirefoxOptions()
+            #option.add_argument('headless')
+            browser = webdriver.Firefox()#firefox_options=option)
+            #打开网页
+            browser.get(url)
+            #由于第一个单元格的xpath不规律，所以第一个单元格不参与循环
+            try:
+                browser.find_elements_by_xpath("/html/body/div[10]/div/div[1]/div[1]/div/div/ul/li[1]/div[1]/div[2]/div[1]/div[1]/a")[0].click()
+                time.sleep(stop)
+                #焦点切换到最新打开的窗口
+                windows = browser.window_handles
+                browser.switch_to.window(windows[-1])
+                time.sleep(stop)
+                browser.find_elements_by_xpath("/html/body/div[5]/div[3]/div[2]/div[1]/div[10]/div[1]/p/a")[0].click()
+                time.sleep(stop)
+                windows = browser.window_handles
+                browser.switch_to.window(windows[-1])
+                #从这里写开始爬取的代码
+                time.sleep(stop)
+                print("正在爬取第一单元格的......")
+                # 楼盘名
+                try:
+                    name = browser.find_elements_by_xpath("//*[@id='huxinxq_E02_15']")[0].text
+                except Exception as e:
+                    print("\n启用第二套Xpath")
+                    print(e)
+                    name = browser.find_elements_by_xpath("/html/body/div[3]/div/div[1]/dl/dd/div[1]/h1/a")[0].text
+                print("楼盘名")
+                # 价格
+                try:
+                    price = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/div/div[1]/em")[0].text
+                except Exception as e:
+                    print("\n启用第二套Xpath")
+                    print(e)
+                    price = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/div/div/em")[0].text
+                print("价格")
+                # 物业类别
+                wy_type = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[1]/div[2]")[0].text
+                print("物业类别")
+                # 建筑类别
+                jz_type = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[3]/div[2]/span")[0].text
+                print("建筑类别")
+                # 产权年限
+                try:
+                    cqnx = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[5]/div[2]/div/p")[
+                        0].text
+                except Exception as e:
+                    print("\n启用第二套Xpath")
+                    print(e)
+                    cqnx = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[5]/div[2]")[0].text
+                print("产权年限")
+                # 开发商
+                kfs = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[7]/div[2]/a")[0].text
+                print("开发商")
+                # 楼盘地址
+                lpdz = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[8]/div[2]")[0].text
+                print("楼盘地址")
+                # 项目特色
+                xmts = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[2]/div[2]")[0].text
+                print("项目特色")
+                # 装修状况
+                zxzk = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[4]/div[2]")[0].text
+                print("装修状况")
+                # 环线资料
+                hxzl = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[6]/div[2]")[0].text
+                print("环线资料")
+                # 销售状态
+                xszt = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[1]/div[2]")[0].text
+                print("销售状态")
+                # 开盘时间
+                kpsj = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[3]/div[2]")[0].text
+                print("开盘时间")
+                # 售楼地址
+                sldz = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[5]/div[2]")[0].text
+                print("售楼地址")
+                # 主力户型
+                zlhx = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[7]/div[2]")[0].text
+                print("主力户型")
+                # 交房时间
+                jfsj = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[4]/div[2]")[0].text
+                print("交房时间")
+                # 咨询电话
+                zxdh = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[6]/div[2]")[0].text
+                print("咨询电话")
+                # 占地面积
+                zdmj = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[1]/div[2]")[0].text
+                print("占地面积")
+                # 容积率
+                rjl = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[3]/div[2]")[0].text
+                print("容积率")
+                # 停车位
+                tcw = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[5]/div[2]")[0].text
+                print("停车位")
+                # 总户数
+                zhs = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[7]/div[2]")[0].text
+                print("总户数")
+                # 物业费
+                wyf = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[9]/div[2]")[0].text
+                print("物业费")
+                # 楼层状况
+                lczh = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[11]/div[2]")[0].text
+                print("楼层状况")
+                # 建筑面积
+                jzmj = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[2]/div[2]")[0].text
+                print("建筑面积")
+                # 绿化率
+                lhl = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[4]/div[2]")[0].text
+                print("绿化率")
+                # 楼栋总数
+                ldzs = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[6]/div[2]")[0].text
+                print("楼栋总数")
+                # 物业公司
+                try:
+                    wygs = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[8]/div[2]/a")[0].text
+                except Exception as e:
+                    print("\n启用第二套Xpath")
+                    print(e)
+                    wygs = "此行数据有问题，可能出现错位"
+                print("物业公司")
+                # 周边设施
+                zbss = browser.find_elements_by_xpath("//*[@id='Configuration']")[0].text
+                print("周边设施")
+                sheet1.write(index, 0, name)
+                sheet1.write(index, 1, price)
+                sheet1.write(index, 2, wy_type)
+                sheet1.write(index, 3, jz_type)
+                sheet1.write(index, 4, cqnx)
+                sheet1.write(index, 5, kfs)
+                sheet1.write(index, 6, lpdz)
+                sheet1.write(index, 7, xmts)
+                sheet1.write(index, 8, zxzk)
+                sheet1.write(index, 9, hxzl)
+                sheet1.write(index, 10, xszt)
+                sheet1.write(index, 11, kpsj)
+                sheet1.write(index, 12, sldz)
+                sheet1.write(index, 13, zlhx)
+                sheet1.write(index, 14, jfsj)
+                sheet1.write(index, 15, zxdh)
+                sheet1.write(index, 16, zdmj)
+                sheet1.write(index, 17, rjl)
+                sheet1.write(index, 18, tcw)
+                sheet1.write(index, 19, zhs)
+                sheet1.write(index, 20, wyf)
+                sheet1.write(index, 21, lczh)
+                sheet1.write(index, 22, jzmj)
+                sheet1.write(index, 23, lhl)
+                sheet1.write(index, 24, ldzs)
+                sheet1.write(index, 25, wygs)
+                sheet1.write(index, 26, zbss)
+                index += 1
+                #结束爬取，关掉剩余的三个窗口
+                browser.close()
+                time.sleep(stop)
+                windows = browser.window_handles
+                browser.switch_to.window(windows[-1])
+                browser.close()
+                windows = browser.window_handles
+                browser.switch_to.window(windows[-1])
+                browser.close()
+            except Exception as e:
+                print("\n" + "不存在第一单元格")
+                print(e)
+            #第二个单元到最后一个单元
+            for cell in range(2, 22):
+                try:
+                    print("正在爬取第" + str(cell) + "单元格的......")
+                    #重启浏览器
+                    browser = webdriver.Firefox()
+                    browser.get(url)
+                    browser.find_elements_by_xpath("/html/body/div[10]/div/div[1]/div[1]/div/div/ul/li[" + str(cell) + "]/div/div[2]/div[1]/div[1]/a")[0].click()
+                    time.sleep(stop)
+                    windows = browser.window_handles
+                    browser.switch_to.window(windows[-1])
+                    time.sleep(stop)
+                    browser.find_elements_by_xpath("/html/body/div[5]/div[3]/div[2]/div[1]/div[10]/div[1]/p/a")[0].click()
+                    time.sleep(stop)
+                    windows = browser.window_handles
+                    browser.switch_to.window(windows[-1])
+                    # 从这里写开始爬取的代码
+                    time.sleep(stop)
+                    # 楼盘名
+                    try:
+                        name = browser.find_elements_by_xpath("//*[@id='huxinxq_E02_15']")[0].text
+                    except Exception as e:
+                        print("\n启用第二套Xpath")
+                        print(e)
+                        name = browser.find_elements_by_xpath("/html/body/div[3]/div/div[1]/dl/dd/div[1]/h1/a")[0].text
+                    print("楼盘名")
+                    # 价格
+                    try:
+                        price = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/div/div[1]/em")[0].text
+                    except Exception as e:
+                        print("\n启用第二套Xpath")
+                        print(e)
+                        price = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/div/div/em")[0].text
+                    print("价格")
+                    # 物业类别
+                    wy_type = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[1]/div[2]")[0].text
+                    print("物业类别")
+                    # 建筑类别
+                    jz_type = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[3]/div[2]/span")[0].text
+                    print("建筑类别")
+                    # 产权年限
+                    try:
+                        cqnx = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[5]/div[2]/div/p")[0].text
+                    except Exception as e:
+                        print("\n启用第二套Xpath")
+                        print(e)
+                        cqnx = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[5]/div[2]")[0].text
+                    print("产权年限")
+                    # 开发商
+                    kfs = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[7]/div[2]/a")[0].text
+                    print("开发商")
+                    # 楼盘地址
+                    lpdz = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[8]/div[2]")[0].text
+                    print("楼盘地址")
+                    # 项目特色
+                    xmts = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[2]/div[2]")[0].text
+                    print("项目特色")
+                    # 装修状况
+                    zxzk = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[4]/div[2]")[0].text
+                    print("装修状况")
+                    # 环线资料
+                    hxzl = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[1]/ul/li[6]/div[2]")[0].text
+                    print("环线资料")
+                    # 销售状态
+                    xszt = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[1]/div[2]")[0].text
+                    print("销售状态")
+                    # 开盘时间
+                    kpsj = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[3]/div[2]")[0].text
+                    print("开盘时间")
+                    # 售楼地址
+                    sldz = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[5]/div[2]")[0].text
+                    print("售楼地址")
+                    # 主力户型
+                    zlhx = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[7]/div[2]")[0].text
+                    print("主力户型")
+                    # 交房时间
+                    jfsj = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[4]/div[2]")[0].text
+                    print("交房时间")
+                    # 咨询电话
+                    zxdh = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[2]/ul/li[6]/div[2]")[0].text
+                    print("咨询电话")
+                    # 占地面积
+                    zdmj = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[1]/div[2]")[0].text
+                    print("占地面积")
+                    # 容积率
+                    rjl = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[3]/div[2]")[0].text
+                    print("容积率")
+                    # 停车位
+                    tcw = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[5]/div[2]")[0].text
+                    print("停车位")
+                    # 总户数
+                    zhs = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[7]/div[2]")[0].text
+                    print("总户数")
+                    # 物业费
+                    wyf = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[9]/div[2]")[0].text
+                    print("物业费")
+                    # 楼层状况
+                    lczh = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[11]/div[2]")[0].text
+                    print("楼层状况")
+                    # 建筑面积
+                    jzmj = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[2]/div[2]")[0].text
+                    print("建筑面积")
+                    # 绿化率
+                    lhl = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[4]/div[2]")[0].text
+                    print("绿化率")
+                    # 楼栋总数
+                    ldzs = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[6]/div[2]")[0].text
+                    print("楼栋总数")
+                    # 物业公司
+                    try:
+                        wygs = browser.find_elements_by_xpath("/html/body/div[5]/div/div[1]/div[4]/ul/li[8]/div[2]/a")[0].text
+                    except Exception as e:
+                        print("\n启用第二套Xpath")
+                        print(e)
+                        wygs = "此行数据有问题，可能出现错位"
+                    print("物业公司")
+                    # 周边设施
+                    zbss = browser.find_elements_by_xpath("//*[@id='Configuration']")[0].text
+                    print("周边设施")
+                    sheet1.write(index, 0, name)
+                    sheet1.write(index, 1, price)
+                    sheet1.write(index, 2, wy_type)
+                    sheet1.write(index, 3, jz_type)
+                    sheet1.write(index, 4, cqnx)
+                    sheet1.write(index, 5, kfs)
+                    sheet1.write(index, 6, lpdz)
+                    sheet1.write(index, 7, xmts)
+                    sheet1.write(index, 8, zxzk)
+                    sheet1.write(index, 9, hxzl)
+                    sheet1.write(index, 10, xszt)
+                    sheet1.write(index, 11, kpsj)
+                    sheet1.write(index, 12, sldz)
+                    sheet1.write(index, 13, zlhx)
+                    sheet1.write(index, 14, jfsj)
+                    sheet1.write(index, 15, zxdh)
+                    sheet1.write(index, 16, zdmj)
+                    sheet1.write(index, 17, rjl)
+                    sheet1.write(index, 18, tcw)
+                    sheet1.write(index, 19, zhs)
+                    sheet1.write(index, 20, wyf)
+                    sheet1.write(index, 21, lczh)
+                    sheet1.write(index, 22, jzmj)
+                    sheet1.write(index, 23, lhl)
+                    sheet1.write(index, 24, ldzs)
+                    sheet1.write(index, 25, wygs)
+                    sheet1.write(index, 26, zbss)
+                    index += 1
+                    # 结束爬取，关掉剩余的三个窗口
+                    browser.close()
+                    time.sleep(stop)
+                    windows = browser.window_handles
+                    browser.switch_to.window(windows[-1])
+                    browser.close()
+                    windows = browser.window_handles
+                    browser.switch_to.window(windows[-1])
+                    browser.close()
+                except Exception as e:
+                    print("\n" + "不存在第" + str(cell) + "单元格")
+                    print(e)
+                    continue
+            safe_sleep_time += 1
+            browser.close()
+        xls.save(path + "广州房天下新房数据.xls")
+
+    except Exception as e:
+        print(e)
+        xls.save(path + "广州房天下新房数据(不完全数据).xls")
+
+
+if __name__ == '__main__':
+    print("目前只支持爬取广州房价数据，如需爬房天下其他城市的数据，请在源码中修改url")
+    print("如果频繁报错，不存在单元格的话，可以将时停调成3秒，或更大")
+    new_house_data_capture()
+    os.system('pause\n')
